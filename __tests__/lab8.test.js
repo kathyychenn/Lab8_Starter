@@ -113,7 +113,25 @@ describe('Basic user flow for Website', () => {
     // TODO - Step 4
     // Reload the page, then select all of the <product-item> elements, and check every
     // element to make sure that all of their buttons say "Remove from Cart".
-    
+    await page.reload();
+
+    const prodItems = await page.$$('product-item');
+    let allAreRemove = true;
+
+    for(let i = 0; i < prodItems.length; i++){
+      const prodShadowRoot = await prodItems[i].getProperty('shadowRoot');
+      const buttonElem = await prodShadowRoot.$('button')
+
+      const buttonText = await buttonElem.evaluate((button) => {
+        return button.innerText;
+      });
+
+      // only press button if hasn't been added to cart yet
+      if (buttonText != 'Remove from Cart') {
+        allAreRemove = false;
+      }
+    }
+    expect(allAreRemove).toBe(true);
 
     // Also check to make sure that #cart-count is still 20
     const cartCount = await page.evaluate(() => {
